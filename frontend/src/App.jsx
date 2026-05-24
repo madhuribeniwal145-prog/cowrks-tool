@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const API = 'http://127.0.0.1:8000'
+const API = 'https://cowrks-tool.onrender.com'
 
 const SOURCES = [
   { id: 'WhatsApp', emoji: '💬', color: '#25D366' },
