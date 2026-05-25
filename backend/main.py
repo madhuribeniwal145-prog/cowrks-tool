@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from groq import Groq
@@ -26,7 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
-
 )
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
@@ -123,10 +122,10 @@ class ExportInput(BaseModel):
 
 
 @app.post("/analyse")
-async def analyse_file(file: UploadFile = File(...)):
+async def analyse_file(file: UploadFile = File(...), source: str = Form("General")):
     contents = await file.read()
     text = contents.decode("utf-8", errors="ignore")
-    items = extract_items(text)
+    items = extract_items(text, source)
     return {"items": items, "count": len(items)}
 
 
@@ -166,10 +165,8 @@ async def export_to_sheets(input: ExportInput):
         "https://www.googleapis.com/auth/drive"
     ]
     
-    creds = Credentials.from_service_account_file(
-        r"C:\Users\Lenovo\Desktop\cowrks-tool\backend\google_credentials.json",
-        scopes=scope
-    )
+        creds_json = json.loads(os.environ.get("GOOGLE_CREDENTIALS"))
+        creds = Credentials.from_service_account_info(creds_json, scopes=scope)
     
     gc = gspread.authorize(creds)
     sheet_id = os.environ.get("GOOGLE_SHEET_ID")
@@ -235,8 +232,7 @@ async def download_file_csv(file: UploadFile = File(...)):
             "product": item.get("product", ""),
             "price": item.get("price", ""),
             "final_bid": item.get("final_bid", ""),
-            "tax": item.get("tax", ""),
-            "key_point": item.get("key_point", "")
+            "tax": item.get("key_point", "")
         })
     output.seek(0)
     filename = f"cowrks_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
