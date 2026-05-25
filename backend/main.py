@@ -165,9 +165,8 @@ async def export_to_sheets(input: ExportInput):
         "https://www.googleapis.com/auth/drive"
     ]
     
-        creds_json = json.loads(os.environ.get("GOOGLE_CREDENTIALS"))
-        creds = Credentials.from_service_account_info(creds_json, scopes=scope)
-    
+    creds_json = json.loads(os.environ.get("GOOGLE_CREDENTIALS"))
+    creds = Credentials.from_service_account_info(creds_json, scopes=scope)   
     gc = gspread.authorize(creds)
     sheet_id = os.environ.get("GOOGLE_SHEET_ID")
     sh = gc.open_by_key(sheet_id)
